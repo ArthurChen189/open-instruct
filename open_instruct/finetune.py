@@ -415,7 +415,7 @@ def main(args: FlatArguments, tc: TokenizerConfig):
 
     # ------------------------------------------------------------
     # Set up runtime variables
-    args.run_name = f"{args.exp_name}__{args.seed}__{int(time.time())}"
+    args.run_name = f"{args.exp_name}_train_seed={args.seed}"
     args.output_dir = os.path.join(args.output_dir, args.run_name)
     args.dataset_local_cache_dir = os.path.abspath(args.dataset_local_cache_dir)
     if is_beaker_job():
@@ -551,7 +551,6 @@ def main(args: FlatArguments, tc: TokenizerConfig):
                 config=config,
                 trust_remote_code=tc.trust_remote_code,
                 quantization_config=bnb_config,
-                device_map=device_map,
                 torch_dtype=torch.bfloat16,
                 attn_implementation="flash_attention_2" if args.use_flash_attn else "eager",
             )
@@ -624,6 +623,8 @@ def main(args: FlatArguments, tc: TokenizerConfig):
                 "down_proj",
             ],
         )
+        if args.gradient_checkpointing:
+            model.gradient_checkpointing_enable()
         model = get_peft_model(model, peft_config)
         model.print_trainable_parameters()
     elif args.gradient_checkpointing:
