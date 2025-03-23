@@ -15,7 +15,7 @@ export HF_HOME=$HOME/.cache/huggingface
 
 # configuration
 OUTPUT_DIR="$2/qwen2.5-7b-instruct_nnetnav_${SOURCE}_seed=${SEED}"
-NUM_GPUS=1
+NUM_GPUS=2
 BATCH_SIZE_PER_GPU=1
 TOTAL_BATCH_SIZE=64
 MODEL_AND_TOKENIZER_NAME=/model-weights/Qwen2.5-7B-Instruct/
@@ -28,8 +28,8 @@ echo "Training ${MODEL_AND_TOKENIZER_NAME} using $NUM_GPUS GPUs, $BATCH_SIZE_PER
 # but it will trade off speed.
 
 accelerate launch \
-    --mixed_precision bf16 \
-    --num_processes 1 \
+    --config_file configs/ds_configs/stage3_qlora.yaml \
+    --main_process_port 29501 \
     $SCRIPT \
     --model_name_or_path $MODEL_AND_TOKENIZER_NAME \
     --use_lora \
@@ -39,7 +39,7 @@ accelerate launch \
     --tokenizer_name $MODEL_AND_TOKENIZER_NAME \
     --dataset_mixer_list $TRAIN_FILE 1.0 \
     --max_seq_length 20000 \
-    --preprocessing_num_workers 32 \
+    --preprocessing_num_workers 128 \
     --per_device_train_batch_size $BATCH_SIZE_PER_GPU \
     --gradient_accumulation_steps $GRADIENT_ACC_STEPS \
     --learning_rate 2e-5 \
