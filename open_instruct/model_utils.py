@@ -586,6 +586,28 @@ def format_value(value):
         return f"{value:.2f}"
     return str(value)
 
+def get_model_name_or_path(model_name_or_path: str):
+    import re
+    lowered = model_name_or_path.lower()
+    size = re.search(r'\d+b', lowered)
+    if size is None:
+        # Remove leading and trailing slashes, then replace remaining slashes with --
+        return model_name_or_path.strip('/').replace("/", "--")
+    else:
+        size = size.group(0).replace("b", "B")
+    if "qwen2.5" in lowered:
+        if "instruct" in lowered:
+            return f"Qwen/Qwen2.5-{size}-Instruct"
+        else:
+            return f"Qwen/Qwen2.5-{size}"
+    elif "llama3.1" in lowered:
+        if "instruct" in lowered:
+            return f"meta-llama/Llama-3.1-{size}-Instruct"
+        else:
+            return f"meta-llama/Llama-3.1-{size}"
+    else:
+        return model_name_or_path.strip('/').replace("/", "--")
+        
 
 def print_rich_single_line_metrics(metrics):
     # Create main table

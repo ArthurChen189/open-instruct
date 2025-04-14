@@ -50,7 +50,7 @@ from open_instruct.dataset_transformation import (
     get_cached_dataset_tulu,
     visualize_token,
 )
-from open_instruct.model_utils import push_folder_to_hub, save_with_accelerate
+from open_instruct.model_utils import push_folder_to_hub, save_with_accelerate, get_model_name_or_path
 from open_instruct.utils import (
     ArgumentParserPlus,
     clean_last_n_checkpoints,
@@ -543,7 +543,6 @@ def main(args: FlatArguments, tc: TokenizerConfig):
                 bnb_4bit_compute_dtype=torch.bfloat16,
             )
             device_index = accelerator.local_process_index
-            device_map = {"": device_index}  # force data-parallel training.
             model = AutoModelForCausalLM.from_pretrained(
                 args.model_name_or_path,
                 revision=args.model_revision,
@@ -607,7 +606,9 @@ def main(args: FlatArguments, tc: TokenizerConfig):
             model = prepare_model_for_kbit_training(model, use_gradient_checkpointing=args.gradient_checkpointing)
 
         logger.info("Initializing LORA model...")
+        
         peft_config = LoraConfig(
+            base_model_name_or_path=get_model_name_or_path(args.model_name_or_path),
             task_type=TaskType.CAUSAL_LM,
             inference_mode=False,
             r=args.lora_rank,
@@ -891,6 +892,7 @@ def main(args: FlatArguments, tc: TokenizerConfig):
                 clean_last_n_checkpoints(args.output_dir, args.keep_last_n_checkpoints)
             accelerator.wait_for_everyone()
 
+    # this is saving the last model
     if args.output_dir is not None:
         save_with_accelerate(
             accelerator,

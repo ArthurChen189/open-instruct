@@ -6,7 +6,7 @@ SOURCE=$4
 
 # wandb configuration
 source secrets.sh
-export WANDB_NAME=Qwen2.5-7B-Instruct_nnetnav_${SOURCE}_seed${SEED}_lora
+export WANDB_NAME=Qwen2.5-7B-Instruct_nnetnav_${SOURCE}_option5_seed${SEED}_lora
 
 # huggingface configuration
 export HF_REPO_ID=$WANDB_NAME
@@ -14,13 +14,14 @@ export HF_REPO_REVISION=main
 export HF_HOME=$HOME/.cache/huggingface
 
 # configuration
-OUTPUT_DIR="$2/qwen2.5-7b-instruct_nnetnav_${SOURCE}_seed=${SEED}"
+OUTPUT_DIR="$2/qwen2.5-7b-instruct_nnetnav_${SOURCE}_option5_seed${SEED}_lora"
 NUM_GPUS=1
 BATCH_SIZE_PER_GPU=1
-TOTAL_BATCH_SIZE=64
-MODEL_AND_TOKENIZER_NAME=/model-weights/Qwen2.5-7B-Instruct/
+TOTAL_BATCH_SIZE=32
+# MODEL_AND_TOKENIZER_NAME="/model-weights/Qwen2.5-7B-Instruct/"
+MODEL_AND_TOKENIZER_NAME="Qwen/Qwen2.5-7B-Instruct"
 SCRIPT=$HOME/Workspace/open-instruct/open_instruct/finetune.py
-DATASET_LOCAL_CACHE_DIR=$HOME/.cache/
+DATASET_LOCAL_CACHE_DIR="$HOME/.cache"
 GRADIENT_ACC_STEPS=$(($TOTAL_BATCH_SIZE/$NUM_GPUS/$BATCH_SIZE_PER_GPU))
 echo "Training ${MODEL_AND_TOKENIZER_NAME} using $NUM_GPUS GPUs, $BATCH_SIZE_PER_GPU batch size per GPU, $GRADIENT_ACC_STEPS gradient accumulation steps"
 
